@@ -1,0 +1,94 @@
+_schema-version: "3.2"
+ID: sample-project-salesdocumentmanagement
+description: Sales Document Management
+version: 0.0.1
+modules:
+- name: sample-project-salesdocumentmanagement-destination-content
+  type: com.sap.application.content
+  requires:
+  - name: sample-project-salesdocumentmanagement-destination-service
+    parameters:
+      content-target: true
+  - name: sample-project-salesdocumentmanagement-repo-host
+    parameters:
+      service-key:
+        name: sample-project-salesdocumentmanagement-repo-host-key
+  - name: sample-project-salesdocumentmanagement-uaa
+    parameters:
+      service-key:
+        name: sample-project-salesdocumentmanagement-uaa-key
+  parameters:
+    content:
+      instance:
+        destinations:
+        - Name: sample-project-salesdocumentmanagement_html_repo_host
+          ServiceInstanceName: sample-project-salesdocumentmanagement-html5-srv
+          ServiceKeyName: sample-project-salesdocumentmanagement-repo-host-key
+          sap.cloud.service: sample-project-salesdocumentmanagement
+        - Authentication: OAuth2UserTokenExchange
+          Name: sample-project-salesdocumentmanagement_uaa
+          ServiceInstanceName: sample-project-salesdocumentmanagement-xsuaa-srv
+          ServiceKeyName: sample-project-salesdocumentmanagement-uaa-key
+          sap.cloud.service: sample-project-salesdocumentmanagement
+        existing_destinations_policy: ignore
+  build-parameters:
+    no-source: true
+- name: sample-project-salesdocumentmanagement-app-content
+  type: com.sap.application.content
+  path: .
+  requires:
+  - name: sample-project-salesdocumentmanagement-repo-host
+    parameters:
+      content-target: true
+  build-parameters:
+    build-result: resources
+    requires:
+    - artifacts:
+      - sampleprojectsalesdocumentmanagement.zip
+      name: sampleprojectsalesdocumentmanagement
+      target-path: resources/
+- name: sampleprojectsalesdocumentmanagement
+  type: html5
+  path: .
+  build-parameters:
+    build-result: dist
+    builder: custom
+    commands:
+    - npm install
+    - npm run build:cf
+    supported-platforms: []
+resources:
+- name: sample-project-salesdocumentmanagement-destination-service
+  type: org.cloudfoundry.managed-service
+  parameters:
+    config:
+      HTML5Runtime_enabled: true
+      init_data:
+        instance:
+          destinations:
+          - Authentication: NoAuthentication
+            Name: ui5
+            ProxyType: Internet
+            Type: HTTP
+            URL: https://ui5.sap.com
+          existing_destinations_policy: update
+      version: 1.0.0
+    service: destination
+    service-name: sample-project-salesdocumentmanagement-destination-service
+    service-plan: lite
+- name: sample-project-salesdocumentmanagement-uaa
+  type: org.cloudfoundry.managed-service
+  parameters:
+    path: ./xs-security.json
+    service: xsuaa
+    service-name: sample-project-salesdocumentmanagement-xsuaa-srv
+    service-plan: application
+- name: sample-project-salesdocumentmanagement-repo-host
+  type: org.cloudfoundry.managed-service
+  parameters:
+    service: html5-apps-repo
+    service-name: sample-project-salesdocumentmanagement-html5-srv
+    service-plan: app-host
+parameters:
+  deploy_mode: html5-repo
+  enable-parallel-deployments: true

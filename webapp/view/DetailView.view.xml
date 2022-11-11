@@ -1,0 +1,5 @@
+<mvc:View controllerName="sample.project.salesdocumentmanagement.controller.DetailView"
+    xmlns:mvc="sap.ui.core.mvc" displayBlock="true"
+    xmlns="sap.m">
+   <Text text="Detail View"/>
+</mvc:View>
